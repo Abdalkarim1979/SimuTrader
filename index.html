@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Trading Simulation | محاكاة تداول افتراضي متقدمة</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #3498db;
+      --secondary: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+      --gray: #95a5a6;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+      color: #333;
+      padding: 20px;
+      min-height: 100vh;
+      background-attachment: fixed;
+      transition: all 0.3s;
+    }
+    
+    body[dir="rtl"] {
+      font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--light);
+    }
+    
+    .lang-toggle-btn {
+      position: absolute;
+      top: 1px;
+      right: 15px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      width:15%;
+      border-radius: 20px;
+      padding: 8px 20px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+    }
+    
+    .lang-toggle-btn:hover {
+      background: var(--dark);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .lang-toggle-btn i {
+      font-size: 1.2em;
+    }
+    
+    h1 {
+      color: var(--dark);
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 15px;
+      padding-top: 15px;
+    }
+    
+    .subtitle {
+      color: var(--gray);
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      border: 1px solid #eee;
+    }
+    
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--dark);
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--light);
+    }
+    
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+      color: var(--dark);
+      position: relative;
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .input-group input {
+      flex: 1;
+    }
+    
+    input[type="number"],
+    input[type="range"],
+    input[type="checkbox"] {
+      width: 100%;
+      padding: 12px 15px;
+      margin-top: 8px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    
+    input[type="checkbox"] {
+      width: auto;
+      margin-left: 10px;
+    }
+    
+    input[type="number"]:focus,
+    input[type="range"]:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .range-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .range-container input[type="range"] {
+      flex: 1;
+    }
+    
+    button {
+      margin-top: 25px;
+      padding: 15px;
+      width: 100%;
+      font-size: 1.1rem;
+      background: linear-gradient(to right, var(--primary), #2980b9);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+    }
+    
+    button:hover {
+      background: linear-gradient(to right, #2980b9, var(--primary));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button i {
+      margin-left: 8px;
+    }
+    
+    #results {
+      margin-top: 35px;
+    }
+    
+    .simulation {
+      margin-bottom: 30px;
+      padding: 20px;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      border: 1px solid #eee;
+    }
+    
+    .summary {
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+    
+    .summary pre {
+      font-family: inherit;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+    
+    .toggle-details {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: linear-gradient(to right, var(--warning), #e67e22);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .toggle-details:hover {
+      background: linear-gradient(to right, #e67e22, var(--warning));
+      transform: translateY(-2px);
+    }
+    
+    .details {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f1f2f6;
+      border-radius: 8px;
+      white-space: pre-line;
+      display: none;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    
+    .simulation-summary-card {
+      margin-top: 30px;
+      padding: 25px;
+      border-radius: 15px;
+      background: white;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e0e7ff;
+    }
+    
+    .summary-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f4ff;
+    }
+    
+    .summary-header i {
+      font-size: 28px;
+      color: var(--primary);
+    }
+    
+    .summary-header h3 {
+      margin: 0;
+      color: var(--dark);
+      font-size: 1.4rem;
+    }
+    
+    .summary-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .summary-item {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      gap: 15px;
+      padding: 20px;
+      border-radius: 12px;
+      background: linear-gradient(to bottom right, rgba(240, 248, 255, 0.7), rgba(245, 251, 255, 0.9));
+      border: 1px solid rgba(224, 231, 255, 0.6);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .summary-item.success {
+      border-left: 4px solid var(--secondary);
+    }
+    
+    .summary-item.danger {
+      border-left: 4px solid var(--danger);
+    }
+    
+    .summary-item.primary {
+      border-left: 4px solid var(--primary);
+    }
+    
+    .summary-item i {
+      font-size: 32px;
+      margin-top: 5px;
+    }
+    
+    .summary-item.success i {
+      color: var(--secondary);
+    }
+    
+    .summary-item.danger i {
+      color: var(--danger);
+    }
+    
+    .summary-item.primary i {
+      color: var(--primary);
+    }
+    
+    .item-content {
+      flex: 1;
+    }
+    
+    .item-label {
+      font-weight: bold;
+      color: #555;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    
+    .item-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .summary-item.success .item-value {
+      color: var(--secondary);
+    }
+    
+    .summary-item.danger .item-value {
+      color: var(--danger);
+    }
+    
+    .summary-item.primary .item-value {
+      color: var(--primary);
+    }
+    
+    .item-info {
+      color: #777;
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+    
+    .chart-container {
+      margin-top: 25px;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .chart-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .chart-box {
+      flex: 1;
+      min-width: 300px;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .chart-title {
+      text-align: center;
+      margin-bottom: 15px;
+      color: var(--dark);
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    .stats-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .stat-card {
+      flex: 1;
+      min-width: 200px;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    
+    .profit {
+      color: var(--secondary);
+    }
+    
+    .loss {
+      color: var(--danger);
+    }
+    
+    .progress-container {
+      margin-top: 20px;
+      height: 10px;
+      background: #eee;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      width: 0;
+      transition: width 0.5s ease;
+    }
+    
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+    }
+    
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 250px;
+      background-color: var(--dark);
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 10px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.9rem;
+      font-weight: normal;
+    }
+    
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .info-icon {
+      color: var(--primary);
+      margin-right: 5px;
+      font-size: 0.9rem;
+    }
+    
+    .option-group {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .option-label {
+      flex: 1;
+    }
+    
+    .option-toggle {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    
+    .option-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    
+    .info-box {
+      background-color: #f0f8ff;
+      border-left: 4px solid var(--primary);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+    
+    .info-box i {
+      color: var(--primary);
+      margin-left: 5px;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .input-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .chart-row {
+        flex-direction: column;
+      }
+      
+      .option-group {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .lang-toggle-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        left: auto;
+        padding: 6px 15px;
+        font-size: 0.9rem;
+      }
+      
+      header {
+        padding-top: 50px;
+      }
+    }
+  </style>
+</head>
+<body dir="rtl">
+  <div class="container">
+    <!-- زر تبديل اللغات في الزاوية العلوية اليمنى -->
+    <button class="lang-toggle-btn" id="toggleLangBtn">
+      <i class="fas fa-globe"></i>
+      <span id="langText">English</span>
+    </button>
+    
+    <header>
+      <h1><i class="fas fa-chart-line"></i> <span id="title">محاكاة تداول افتراضي متقدمة</span></h1>
+      <p class="subtitle" id="subtitle">تجربة محاكاة تداول مع رسوم بيانية توضيحية وتحليل مفصل</p>
+    </header>
+    
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-sliders-h"></i> <span id="settings-title">إعدادات المحاكاة</span></h2>
+      
+      <form id="tradeForm">
+        <label>
+          <i class="fas fa-info-circle info-icon"></i> <span id="capital-label">💰 مبلغ الدخول (من - إلى):</span>
+          <span class="tooltip" id="capital-tooltip">
+            <span class="tooltiptext" id="capital-tooltip-text">يتم اختيار مبلغ عشوائي بين القيمتين المدخلة لكل صفقة</span>
+          </span>
+          <div class="input-group">
+            <input type="number" id="capitalMin" min="100" placeholder="الحد الأدنى (مثل: 1000)" required value="1000">
+            <input type="number" id="capitalMax" min="100" placeholder="الحد الأعلى (مثل: 5000)" required value="5000">
+          </div>
+        </label>
+        
+        <label>
+          <i class="fas fa-info-circle info-icon"></i> <span id="ratio-label">📈 نسبة الربح إلى الخسارة:</span>
+          <span class="tooltip" id="ratio-tooltip">
+            <span class="tooltiptext" id="ratio-tooltip-text">عند الربح: (المبلغ × النسبة × 1%)، عند الخسارة: (المبلغ × 1%)</span>
+          </span>
+          <input type="number" step="0.1" id="winLossRatio" min="1" max="5" required placeholder="مثل: 2" value="2">
+        </label>
+        
+        <label>
+          <i class="fas fa-info-circle info-icon"></i> <span id="trades-label">🔁 عدد الصفقات:</span>
+          <span class="tooltip" id="trades-tooltip">
+            <span class="tooltiptext" id="trades-tooltip-text">كلما زاد العدد، كانت المحاكاة أكثر دقة ولكن تستغرق وقتاً أطول</span>
+          </span>
+          <input type="number" id="tradesCount" min="1" max="1000" required placeholder="مثل: 100" value="100">
+        </label>
+        
+        <label>
+          <i class="fas fa-info-circle info-icon"></i> <span id="randomness-label">🎲 درجة العشوائية (%):</span>
+          <span class="tooltip" id="randomness-tooltip">
+            <span class="tooltiptext" id="randomness-tooltip-text">0% = احتمالات ثابتة (50% ربح/خسارة)، 100% = عشوائية كاملة</span>
+          </span>
+          <div class="range-container">
+            <input type="range" id="randomness" min="0" max="100" value="50">
+            <span id="randomnessValue">50%</span>
+          </div>
+        </label>
+        
+        <label>
+          <i class="fas fa-info-circle info-icon"></i> <span id="runs-label">🔁 عدد مرات المحاكاة:</span>
+          <span class="tooltip" id="runs-tooltip">
+            <span class="tooltiptext" id="runs-tooltip-text">للمقارنة بين نتائج محاكيات متعددة</span>
+          </span>
+          <input type="number" id="simulationRuns" min="1" max="100" value="1" required>
+        </label>
+        
+        <!-- خيار الرصيد التراكمي -->
+        <div class="option-group">
+          <div class="option-label">
+            <i class="fas fa-info-circle info-icon"></i> <span id="cumulative-label">📊 الرصيد التراكمي:</span>
+            <span class="tooltip" id="cumulative-tooltip" 
+              <span class="tooltiptext" id="cumulative-tooltip-text"></span>
+            </span>
+          </div>
+          <label class="option-toggle">
+            <input type="checkbox" id="cumulativeBalance" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        
+        <!-- خيار نسبة الصفقات الناجحة -->
+        <label>
+          <i class="fas fa-info-circle info-icon"></i> <span id="winrate-label">🎯 نسبة الصفقات الناجحة (%):</span>
+          <span class="tooltip" id="winrate-tooltip">
+            <span class="tooltiptext" id="winrate-tooltip-text">عند تحديد النسبة، سيتم استخدامها بدقة (بدون تأثير درجة العشوائية)</span>
+          </span>
+          <input type="number" id="winRate" min="0" max="100" placeholder="مثل: 60 (اتركه فارغًا للعشوائية)">
+        </label>
+        
+        <div class="info-box">
+          <i class="fas fa-info-circle"></i>
+          <strong id="note-label">ملاحظة حول نسبة الصفقات الناجحة:</strong> 
+          <span id="note-text"></span>
+        </div>
+        
+        <button type="submit"><i class="fas fa-play"></i> <span id="start-btn">ابدأ المحاكاة</span></button>
+      </form>
+      
+      <div class="progress-container" id="progressContainer" style="display:none;">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+    
+    <div id="results"></div>
+  </div>
+  
+  <script>
+    // Language dictionary
+    const translations = {
+      en: {
+        title: "Advanced Trading Simulation",
+        subtitle: "Virtual trading experience with illustrative charts and detailed analysis",
+        "settings-title": "Simulation Settings",
+        "capital-label": "💰 Entry Amount (From - To):",
+        "capital-tooltip-text": "The amount you will enter for each trade",
+        "capital-placeholder-min": "Minimum (e.g. 1000)",
+        "capital-placeholder-max": "Maximum (e.g. 5000)",
+        "ratio-label": "📈 Profit to Loss Ratio:",
+        "ratio-tooltip-text": "Potential profit ratio compared to potential loss",
+        "ratio-placeholder": "e.g. 2",
+        "trades-label": "🔁 Number of Trades:",
+        "trades-tooltip-text": "The number of trades to simulate",
+        "trades-placeholder": "e.g. 100",
+        "randomness-label": "🎲 Randomness Level (%):",
+        "randomness-tooltip-text": "Level of randomness in trade results",
+        "runs-label": "🔁 Simulation Runs:",
+        "runs-tooltip-text": "Number of times to repeat the simulation",
+        "cumulative-label": "📊 Cumulative Balance:",
+        "cumulative-tooltip-text": "Use cumulative balance (amount accumulates based on previous trade result)",
+        "winrate-label": "🎯 Win Rate (%):",
+        "winrate-tooltip-text": "Specify the win rate or leave it random",
+        "winrate-placeholder": "e.g. 60 (leave empty for randomness)",
+        "note-label": "Note about win rate:",
+        "note-text": "When a percentage is specified, it will be applied accurately to all trades. When the field is left blank, the randomness level above will be used.",
+        "start-btn": "Start Simulation",
+        "progress-text": "Processing...",
+        "simulation-title": "Simulation",
+        "trades-count": "Number of Trades",
+        "win-rate": "Win Rate",
+        "loss-rate": "Loss Rate",
+        "initial-capital": "Initial Capital",
+        "final-capital": "Final Capital",
+        "net-profit": "Net Profit",
+        "profit": "Profit",
+        "loss": "Loss",
+        "cumulative": "Cumulative",
+        "non-cumulative": "Non-Cumulative",
+        "random": "Random",
+        "show-details": "Show Details",
+        "hide-details": "Hide Details",
+        "summary-title": "Summary of Results",
+        "highest-profit": "Highest Net Profit",
+        "lowest-profit": "Lowest Net Profit",
+        "average-profit": "Average Net Profit",
+        "in-simulation": "(in simulation #)",
+        "total-simulations": "Total Simulations",
+        "total-trades": "Total Trades",
+        "winning-rate": "Winning Rate",
+        "total-net-profit": "Total Net Profit",
+        "balance-chart": "Cumulative Profit Evolution",
+        "distribution-chart": "Trades Distribution",
+        "comparison-chart": "Net Profit Comparison Between Simulations",
+        "trade-number": "Trade Number",
+        "cumulative-profit": "Cumulative Profit",
+        "winning-trades": "Winning Trades",
+        "losing-trades": "Losing Trades",
+        "net-profit": "Net Profit",
+        "langText": "العربية"
+      },
+      ar: {
+        title: "محاكاة تداول افتراضي متقدمة",
+        subtitle: "تجربة محاكاة تداول مع رسوم بيانية توضيحية وتحليل مفصل",
+        "settings-title": "إعدادات المحاكاة",
+        "capital-label": "💰 مبلغ الدخول (من - إلى):",
+        "capital-tooltip-text": "المبلغ الذي ستدخل به لكل صفقة",
+        "capital-placeholder-min": "الحد الأدنى (مثل: 1000)",
+        "capital-placeholder-max": "الحد الأعلى (مثل: 5000)",
+        "ratio-label": "📈 نسبة الربح إلى الخسارة:",
+        "ratio-tooltip-text": "نسبة الربح المحتملة مقارنة بالخسارة المحتملة",
+        "ratio-placeholder": "مثل: 2",
+        "trades-label": "🔁 عدد الصفقات:",
+        "trades-tooltip-text": "عدد الصفقات التي سيتم محاكاتها",
+        "trades-placeholder": "مثل: 100",
+        "randomness-label": "🎲 درجة العشوائية (%):",
+        "randomness-tooltip-text": "مستوى العشوائية في نتائج الصفقات",
+        "runs-label": "🔁 عدد مرات المحاكاة:",
+        "runs-tooltip-text": "عدد مرات تكرار المحاكاة",
+        "cumulative-label": "📊 الرصيد التراكمي:",
+        "cumulative-tooltip-text": "استخدام رصيد تراكمي (المبلغ يتراكم حسب نتيجة الصفقة السابقة)",
+        "winrate-label": "🎯 نسبة الصفقات الناجحة (%):",
+        "winrate-tooltip-text": "تحديد نسبة الصفقات الناجحة أو تركها عشوائية",
+        "winrate-placeholder": "مثل: 60 (اتركه فارغًا للعشوائية)",
+        "note-label": "ملاحظة حول نسبة الصفقات الناجحة:",
+        "note-text": "عند تحديد نسبة، سيتم تطبيقها بدقة على جميع الصفقات. عند ترك الحقل فارغًا، سيتم استخدام درجة العشوائية المحددة أعلاه.",
+        "start-btn": "ابدأ المحاكاة",
+        "progress-text": "جاري المعالجة...",
+        "simulation-title": "المحاكاة",
+        "trades-count": "عدد الصفقات",
+        "win-rate": "نسبة الصفقات الرابحة",
+        "loss-rate": "نسبة الصفقات الخاسرة",
+        "initial-capital": "رأس المال الأولي",
+        "final-capital": "رأس المال النهائي",
+        "net-profit": "صافي الربح",
+        "profit": "ربح",
+        "loss": "خسارة",
+        "cumulative": "تراكمي",
+        "non-cumulative": "غير تراكمي",
+        "random": "عشوائية",
+        "show-details": "عرض التفاصيل",
+        "hide-details": "إخفاء التفاصيل",
+        "summary-title": "ملخص النتائج",
+        "highest-profit": "أعلى صافي ربح",
+        "lowest-profit": "أدنى صافي ربح",
+        "average-profit": "متوسط صافي الربح",
+        "in-simulation": "(في المحاكاة رقم)",
+        "total-simulations": "عدد المحاكيات",
+        "total-trades": "إجمالي الصفقات",
+        "winning-rate": "نسبة الصفقات الرابحة",
+        "total-net-profit": "صافي الربح الإجمالي",
+        "balance-chart": "تطور الربح التراكمي",
+        "distribution-chart": "توزيع الصفقات",
+        "comparison-chart": "مقارنة صافي الربح بين المحاكيات",
+        "trade-number": "رقم الصفقة",
+        "cumulative-profit": "الربح التراكمي",
+        "winning-trades": "الصفقات الرابحة",
+        "losing-trades": "الصفقات الخاسرة",
+        "net-profit": "صافي الربح",
+        "langText": "English"
+      }
+    };
+
+    // Current language
+    let currentLang = 'ar';
+    
+    // Function to change language
+    function changeLanguage(lang) {
+      currentLang = lang;
+      
+      // Update UI direction
+      document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.body.style.fontFamily = lang === 'ar' ? "'Tajawal', 'Segoe UI', Tahoma, sans-serif" : "'Segoe UI', Tahoma, sans-serif";
+      
+      // Update all translatable elements
+      for (const [key, value] of Object.entries(translations[lang])) {
+        const elements = document.querySelectorAll(`[id="${key}"]`);
+        if (elements.length > 0) {
+          elements.forEach(el => {
+            el.textContent = value;
+          });
+        }
+      }
+      
+      // Update placeholders
+      document.getElementById('capitalMin').placeholder = translations[lang]['capital-placeholder-min'];
+      document.getElementById('capitalMax').placeholder = translations[lang]['capital-placeholder-max'];
+      document.getElementById('winLossRatio').placeholder = translations[lang]['ratio-placeholder'];
+      document.getElementById('tradesCount').placeholder = translations[lang]['trades-placeholder'];
+      document.getElementById('winRate').placeholder = translations[lang]['winrate-placeholder'];
+      
+      // Update the language toggle button text
+      document.getElementById('langText').textContent = translations[lang]['langText'];
+      
+      // Update button position based on language
+      const toggleBtn = document.getElementById('toggleLangBtn');
+      if (lang === 'ar') {
+        toggleBtn.style.right = '15px';
+        toggleBtn.style.left = 'auto';
+      } else {
+        toggleBtn.style.left = '15px';
+        toggleBtn.style.right = 'auto';
+      }
+    }
+    
+    // Toggle language function
+    function toggleLanguage() {
+      const newLang = currentLang === 'ar' ? 'en' : 'ar';
+      changeLanguage(newLang);
+    }
+    
+    // Initialize with Arabic
+    changeLanguage('ar');
+    
+    // Add event listener to toggle button
+    document.getElementById('toggleLangBtn').addEventListener('click', toggleLanguage);
+
+    // Simulation functionality
+    document.getElementById("randomness").addEventListener("input", function() {
+      document.getElementById("randomnessValue").textContent = this.value + "%";
+    });
+    
+    document.getElementById("tradeForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      // Show progress bar
+      document.getElementById("progressContainer").style.display = "block";
+      const progressBar = document.getElementById("progressBar");
+      progressBar.style.width = "0%";
+      
+      const minCapital = parseFloat(document.getElementById("capitalMin").value);
+      const maxCapital = parseFloat(document.getElementById("capitalMax").value);
+      const ratio = parseFloat(document.getElementById("winLossRatio").value);
+      const trades = parseInt(document.getElementById("tradesCount").value);
+      const randomness = parseInt(document.getElementById("randomness").value);
+      const runs = parseInt(document.getElementById("simulationRuns").value);
+      const cumulativeBalance = document.getElementById("cumulativeBalance").checked;
+      const winRateInput = document.getElementById("winRate").value;
+      const winRate = winRateInput !== "" ? parseFloat(winRateInput) / 100 : null;
+      
+      let resultsContainer = document.getElementById("results");
+      resultsContainer.innerHTML = '<div class="chart-container"><canvas id="summaryChart"></canvas></div>';
+      
+      let resultsArray = [];
+      let maxProfit = -Infinity;
+      let minProfit = Infinity;
+      let maxRunIndex = 0;
+      let minRunIndex = 0;
+      let totalWins = 0;
+      let totalLosses = 0;
+      let totalNetProfit = 0;
+      
+      // Progress bar
+      let progress = 0;
+      const totalSteps = runs * trades;
+      let currentStep = 0;
+      
+      for (let run = 1; run <= runs; run++) {
+        let detailsLog = '';
+        let totalProfit = 0;
+        let wins = 0;
+        let losses = 0;
+        let totalInvested = 0;
+        let balanceHistory = [0];
+        
+        // Starting capital
+        let currentCapital = +(Math.random() * (maxCapital - minCapital) + minCapital).toFixed(2);
+        let startingCapital = currentCapital;
+        
+        for (let i = 1; i <= trades; i++) {
+          const entryCapital = cumulativeBalance ? currentCapital : 
+            +(Math.random() * (maxCapital - minCapital) + minCapital).toFixed(2);
+          
+          totalInvested += entryCapital;
+          
+          // Determine trade result
+          let result;
+          if (winRate !== null) {
+            result = Math.random() < winRate ? "win" : "loss";
+          } else {
+            let winChance = 0.5 + (Math.random() - 0.5) * (randomness / 100);
+            result = Math.random() < winChance ? "win" : "loss";
+          }
+          
+          if (result === "win") {
+            const profit = entryCapital * 0.01 * ratio;
+            wins++;
+            totalProfit += profit;
+            
+            if (cumulativeBalance) {
+              currentCapital += profit;
+              if (currentLang === 'ar') {
+                detailsLog += `✔️ صفقة ${i}: 🟢 ربح ${profit.toFixed(2)} → رأس المال الجديد: ${currentCapital.toFixed(2)} → إجمالي الربح: ${totalProfit.toFixed(2)}\n`;
+              } else {
+                detailsLog += `✔️ Trade ${i}: 🟢 Profit ${profit.toFixed(2)} → New Capital: ${currentCapital.toFixed(2)} → Total Profit: ${totalProfit.toFixed(2)}\n`;
+              }
+            } else {
+              if (currentLang === 'ar') {
+                detailsLog += `✔️ صفقة ${i}: 🟢 ربح ${profit.toFixed(2)} من دخول ${entryCapital.toFixed(2)}\n`;
+              } else {
+                detailsLog += `✔️ Trade ${i}: 🟢 Profit ${profit.toFixed(2)} from entry ${entryCapital.toFixed(2)}\n`;
+              }
+            }
+          } else {
+            const loss = entryCapital * 0.01;
+            losses++;
+            totalProfit -= loss;
+            
+            if (cumulativeBalance) {
+              currentCapital -= loss;
+              if (currentLang === 'ar') {
+                detailsLog += `❌ صفقة ${i}: 🔴 خسارة ${loss.toFixed(2)} → رأس المال الجديد: ${currentCapital.toFixed(2)} → إجمالي الربح: ${totalProfit.toFixed(2)}\n`;
+              } else {
+                detailsLog += `❌ Trade ${i}: 🔴 Loss ${loss.toFixed(2)} → New Capital: ${currentCapital.toFixed(2)} → Total Profit: ${totalProfit.toFixed(2)}\n`;
+              }
+            } else {
+              if (currentLang === 'ar') {
+                detailsLog += `❌ صفقة ${i}: 🔴 خسارة ${loss.toFixed(2)} من دخول ${entryCapital.toFixed(2)}\n`;
+              } else {
+                detailsLog += `❌ Trade ${i}: 🔴 Loss ${loss.toFixed(2)} from entry ${entryCapital.toFixed(2)}\n`;
+              }
+            }
+          }
+          
+          // Update balance history
+          balanceHistory.push(totalProfit);
+          
+          // Update progress bar
+          currentStep++;
+          progress = (currentStep / totalSteps) * 100;
+          progressBar.style.width = progress + "%";
+        }
+        
+        const netPercent = (totalProfit / startingCapital) * 100;
+        const statusEmoji = totalProfit >= 0 ? "🟢" : "🔴";
+        
+        // Simulation summary
+        let summary;
+        if (currentLang === 'ar') {
+          summary = `🧪 المحاكاة رقم ${run}:
+  📈 إجمالي الأرباح: ${wins} (${(wins/trades*100).toFixed(1)}%)
+  📉 إجمالي الخسائر: ${losses} (${(losses/trades*100).toFixed(1)}%)
+  💵 رأس المال الأولي: ${startingCapital.toFixed(2)}
+  💰 رأس المال النهائي: ${cumulativeBalance ? currentCapital.toFixed(2) : '-'}
+  ${statusEmoji} صافي ${totalProfit >= 0 ? "الربح" : "الخسارة"}: ${totalProfit.toFixed(2)} (${netPercent.toFixed(2)}%)
+  📊 نوع الرصيد: ${cumulativeBalance ? "تراكمي" : "غير تراكمي"}
+  🎯 نسبة النجاح: ${winRate !== null ? (winRate * 100).toFixed(1) + '%' : 'عشوائية'}`;
+        } else {
+          summary = `🧪 Simulation ${run}:
+  📈 Total Wins: ${wins} (${(wins/trades*100).toFixed(1)}%)
+  📉 Total Losses: ${losses} (${(losses/trades*100).toFixed(1)}%)
+  💵 Initial Capital: ${startingCapital.toFixed(2)}
+  💰 Final Capital: ${cumulativeBalance ? currentCapital.toFixed(2) : '-'}
+  ${statusEmoji} Net ${totalProfit >= 0 ? "Profit" : "Loss"}: ${totalProfit.toFixed(2)} (${netPercent.toFixed(2)}%)
+  📊 Balance Type: ${cumulativeBalance ? "Cumulative" : "Non-Cumulative"}
+  🎯 Win Rate: ${winRate !== null ? (winRate * 100).toFixed(1) + '%' : 'Random'}`;
+        }
+        
+        // Save results
+        resultsArray.push({
+          runNumber: run,
+          summary: summary,
+          details: detailsLog,
+          netProfit: totalProfit,
+          wins: wins,
+          losses: losses,
+          balanceHistory: balanceHistory,
+          cumulativeBalance: cumulativeBalance,
+          winRate: winRate,
+          finalCapital: cumulativeBalance ? currentCapital : null
+        });
+        
+        // Update statistics
+        totalWins += wins;
+        totalLosses += losses;
+        totalNetProfit += totalProfit;
+        
+        // Update min/max profit
+        if (totalProfit > maxProfit) {
+          maxProfit = totalProfit;
+          maxRunIndex = run;
+        }
+        if (totalProfit < minProfit) {
+          minProfit = totalProfit;
+          minRunIndex = run;
+        }
+      }
+      
+      // Hide progress bar
+      setTimeout(() => {
+        progressBar.style.width = "100%";
+        setTimeout(() => {
+          document.getElementById("progressContainer").style.display = "none";
+        }, 500);
+      }, 300);
+      
+      // Clear previous results
+      resultsContainer.innerHTML = '';
+      
+      // Add statistics
+      if (runs > 1) {
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'stats-container';
+        
+        statsDiv.innerHTML = `
+          <div class="stat-card">
+            <div><i class="fas fa-sync-alt fa-2x"></i></div>
+            <div class="stat-value">${runs}</div>
+            <div>${translations[currentLang]['total-simulations']}</div>
+          </div>
+          <div class="stat-card">
+            <div><i class="fas fa-chart-pie fa-2x"></i></div>
+            <div class="stat-value">${totalWins + totalLosses}</div>
+            <div>${translations[currentLang]['total-trades']}</div>
+          </div>
+          <div class="stat-card">
+            <div><i class="fas fa-thumbs-up fa-2x"></i></div>
+            <div class="stat-value profit">${((totalWins/(totalWins+totalLosses))*100).toFixed(1)}%</div>
+            <div>${translations[currentLang]['winning-rate']}</div>
+          </div>
+          <div class="stat-card">
+            <div><i class="fas fa-coins fa-2x"></i></div>
+            <div class="stat-value ${totalNetProfit >= 0 ? 'profit' : 'loss'}">${totalNetProfit.toFixed(2)}</div>
+            <div>${translations[currentLang]['total-net-profit']}</div>
+          </div>
+        `;
+        
+        resultsContainer.appendChild(statsDiv);
+        
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'simulation-summary-card';
+        summaryDiv.innerHTML = `
+            <div class="summary-header">
+                <i class="fas fa-chart-bar"></i>
+                <h3>${translations[currentLang]['summary-title']} ${runs} ${currentLang === 'ar' ? 'محاكاة' : 'simulations'}</h3>
+            </div>
+            <div class="summary-items">
+                <div class="summary-item success">
+                    <i class="fas fa-crown"></i>
+                    <div class="item-content">
+                        <div class="item-label">${translations[currentLang]['highest-profit']}</div>
+                        <div class="item-value">${maxProfit.toFixed(2)}</div>
+                        <div class="item-info">${translations[currentLang]['in-simulation']} ${maxRunIndex}</div>
+                    </div>
+                </div>
+                <div class="summary-item danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="item-content">
+                        <div class="item-label">${translations[currentLang]['lowest-profit']}</div>
+                        <div class="item-value">${minProfit.toFixed(2)}</div>
+                        <div class="item-info">${translations[currentLang]['in-simulation']} ${minRunIndex}</div>
+                    </div>
+                </div>
+                <div class="summary-item primary">
+                    <i class="fas fa-calculator"></i>
+                    <div class="item-content">
+                        <div class="item-label">${translations[currentLang]['average-profit']}</div>
+                        <div class="item-value">${(totalNetProfit/runs).toFixed(2)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        resultsContainer.appendChild(summaryDiv);
+      }
+      
+      // Add charts for the first simulation
+      if (resultsArray.length > 0) {
+        const firstSimulation = resultsArray[0];
+        
+        const chartRow = document.createElement('div');
+        chartRow.className = 'chart-row';
+        
+        // Balance chart
+        const balanceChartBox = document.createElement('div');
+        balanceChartBox.className = 'chart-box';
+        balanceChartBox.innerHTML = `
+          <div class="chart-title"><i class="fas fa-chart-line"></i> ${translations[currentLang]['balance-chart']}</div>
+          <canvas id="balanceChart"></canvas>
+        `;
+        
+        // Win/Loss chart
+        const winLossChartBox = document.createElement('div');
+        winLossChartBox.className = 'chart-box';
+        winLossChartBox.innerHTML = `
+          <div class="chart-title"><i class="fas fa-chart-pie"></i> ${translations[currentLang]['distribution-chart']}</div>
+          <canvas id="winLossChart"></canvas>
+        `;
+        
+        chartRow.appendChild(balanceChartBox);
+        chartRow.appendChild(winLossChartBox);
+        resultsContainer.appendChild(chartRow);
+        
+        // Create charts after adding elements to DOM
+        setTimeout(() => {
+          // Balance chart
+          const balanceCtx = document.getElementById('balanceChart').getContext('2d');
+          new Chart(balanceCtx, {
+            type: 'line',
+            data: {
+              labels: Array.from({length: firstSimulation.balanceHistory.length}, (_, i) => i),
+              datasets: [{
+                label: translations[currentLang]['cumulative-profit'],
+                data: firstSimulation.balanceHistory,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      return `${translations[currentLang]['cumulative-profit']}: ${context.parsed.y.toFixed(2)}`;
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: translations[currentLang]['trade-number']
+                  }
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: translations[currentLang]['cumulative-profit']
+                  }
+                }
+              }
+            }
+          });
+          
+          // Win/Loss chart
+          const winLossCtx = document.getElementById('winLossChart').getContext('2d');
+          new Chart(winLossCtx, {
+            type: 'doughnut',
+            data: {
+              labels: [
+                translations[currentLang]['winning-trades'], 
+                translations[currentLang]['losing-trades']
+              ],
+              datasets: [{
+                data: [firstSimulation.wins, firstSimulation.losses],
+                backgroundColor: ['#2ecc71', '#e74c3c'],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'bottom'
+                }
+              }
+            }
+          });
+        }, 100);
+      }
+      
+      // Comparison chart for multiple runs
+      if (runs > 1) {
+        const comparisonChartBox = document.createElement('div');
+        comparisonChartBox.className = 'chart-box';
+        comparisonChartBox.style.marginTop = '20px';
+        comparisonChartBox.innerHTML = `
+          <div class="chart-title"><i class="fas fa-chart-bar"></i> ${translations[currentLang]['comparison-chart']}</div>
+          <canvas id="comparisonChart"></canvas>
+        `;
+        resultsContainer.appendChild(comparisonChartBox);
+        
+        setTimeout(() => {
+          const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+          
+          const labels = resultsArray.map(sim => `${translations[currentLang]['simulation-title']} ${sim.runNumber}`);
+          const data = resultsArray.map(sim => sim.netProfit);
+          const colors = data.map(profit => profit >= 0 ? '#2ecc71' : '#e74c3c');
+          
+          new Chart(comparisonCtx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: translations[currentLang]['net-profit'],
+                data: data,
+                backgroundColor: colors,
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: false
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: translations[currentLang]['net-profit']
+                  }
+                }
+              }
+            }
+          });
+        }, 200);
+      }
+      
+      // Display each simulation
+      resultsArray.forEach(result => {
+        const simulationDiv = document.createElement('div');
+        simulationDiv.className = 'simulation';
+        
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'summary';
+        summaryDiv.innerHTML = `<pre>${result.summary}</pre>`;
+        
+        const toggleButton = document.createElement('button');
+        toggleButton.className = 'toggle-details';
+        toggleButton.innerHTML = `<i class="fas fa-list"></i> ${translations[currentLang]['show-details']}`;
+        
+        toggleButton.onclick = function() {
+          const detailsDiv = this.nextElementSibling;
+          if (detailsDiv.style.display === 'none') {
+            detailsDiv.style.display = 'block';
+            this.innerHTML = `<i class="fas fa-times"></i> ${translations[currentLang]['hide-details']}`;
+          } else {
+            detailsDiv.style.display = 'none';
+            this.innerHTML = `<i class="fas fa-list"></i> ${translations[currentLang]['show-details']}`;
+          }
+        };
+        
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'details';
+        detailsDiv.style.display = 'none';
+        detailsDiv.innerHTML = `<pre>${result.details}</pre>`;
+        
+        simulationDiv.appendChild(summaryDiv);
+        simulationDiv.appendChild(toggleButton);
+        simulationDiv.appendChild(detailsDiv);
+        
+        resultsContainer.appendChild(simulationDiv);
+      });
+    
+    });
+  </script>
+</body>
+</html>
